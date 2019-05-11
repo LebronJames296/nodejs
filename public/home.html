@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>主页 -MyBlog</title>
+		<link rel="stylesheet" href="js/bootstrap.min.css">
+		<script type="text/javascript" src="./js/xmlhttp.js"></script>
+		<style>
+			body{
+				padding-top: 50px;
+			}
+			.jumbotron{
+				height: 600px;
+			}
+			#button1{
+				margin-top:30px;
+			}
+			#id1{
+				text-align: center;
+			}
+			#logining{
+				display: none;
+			}
+			#m2{
+				display: none;
+			}
+		 
+		 
+		 
+			
+		</style>
+	</head>
+	<body>
+		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<a href="#" class="navbar-brand">My Blog</a>
+				</div>
+				
+				<div class="collapse navbar-collapse ">
+					<ul class="nav navbar-nav navbar-right">
+						
+						<li class="nav-item"><a href="#">MyZone</a></li>
+						<li class="nav-item"><a href="#">Andmore</a></li>
+						<li class="nav-item dropdown " id="logining">
+							<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+								 <img src="mulan.jpg" alt="" style="width: 30px;height: 30px; border-radius:50% ">
+							<span id="name">james</span>	  
+							<span class="caret"></span>
+							</a>
+								
+						<ul class="dropdown-menu">
+							<li role="presentation">
+							<a id="id1"href="#" tebindex="-1" role="menuitem">个人中心</a>
+							</li>
+		 
+							<a class="dropdown-item" id="logout" href="#">
+							 <form action="/logout" method="GET" onsubmit="return confirm('您确定要退出吗？');">
+                  
+							<button class="btn btn-block btn-danger" type="submit" name="button">退出</button>
+								</form>
+								</a> 
+							</ul>
+						</li>
+ 
+						<li class="login" id="login"><a  id ="login-a"href="./form.html" style="w">登录</a></li>
+					</ul>
+				</div>
+				
+			</div>
+		</nav>
+		
+		 
+		
+		<div class="jumbotron" >
+			<div class="container" id="m1">
+				<h1>Welcome My <span class="label label-info">Blog</span></h1>
+				<br>
+				<br>
+				<p>现在开始你的博客之旅</p>
+				<p><a class="btn btn-success btn-lg " id ="button1" href="#" role="button">Learn more</a></p>
+			</div>
+			
+			<div class="container" id="m2">
+				<h1>请前往邮箱完成 <span class="label label-info">验证</span></h1>
+				<div class="col-lg-offset-7">
+					<a type="button" class="btn btn-success" id="link">双击这里发送邮件</a>
+				</div>
+			</div>
+		</div>
+		
+	
+		
+	</body>
+	
+ <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js "></script>
+ <script src="js/bootstrap.min.js"></script>
+	<script>
+		window.onload=function(){
+			
+   function $(id){
+ 		return typeof id==="string"?document.getElementById(id):null;
+ 	}
+		 
+	function change(str1,str2){
+		
+		$(str1).style.visibility='hidden';
+		$(str1).style.display='none';
+		$(str2).style.visibility='visible';
+		$(str2).style.display='block';
+	}
+
+	//检查用户登录状态
+	 urlCall('/checklogin',null,"GET",function(r){
+	 	
+	 
+	 	var rr = JSON.parse(r);
+		var	username =rr.username;
+		let varify_e =rr.verify;
+		 
+		var rrr=rr.toString();
+		// console.log(rr)
+		// console.log(varify_e)
+		if(rrr=='not'){
+			change('logining','login');
+ 
+		}
+		else{
+			 change('login','logining');
+			$('name').innerText=username;
+		
+		if(varify_e==1){
+				$('m1').style.display='block';
+				$('m2').style.display='none';
+		}
+		else{
+				$('m1').style.display='none';
+				 $('m2').style.display='block';
+
+		}
+		
+		}
+		
+  
+	 })
+	 
+	 //点击按钮发送邮件
+	$('link').ondblclick= function(){
+	 urlCall('/sendMail',null,"GET",function(r){
+	 		var rr = JSON.parse(r);
+	 })
+	}
+	
+	 
+		}
+	 
+	</script>
+ 
+</html>

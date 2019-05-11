@@ -1,0 +1,34 @@
+
+在周一源码基础上执行
+1、
+create table ta01_user (username varchar(15) primary key, name varchar(30), passwd varchar(32))
+2、
+insert into ta01_user (username, name, passwd) values (?,?,md5(?))
+?代表的值从html里的form获得
+username:<input type=text name=username />
+passwd:<input type=password name=passwd />
+.....
+post方法 req.body.username ....
+3、
+select username from ta01_user where username=? and passwd=md5(?)
+?代表的值从前端获得
+如果能获得username，说明登录成功，可以写session了
+能交多少代码就交多少。
+
+说明
+ta01~ta09 ta0a ta0b...ta0f是计科一班的表前缀
+ta01 计科一班第一组
+ta02 计科一班第二组
+。。。
+ta0a 计科一班第十组 （hex十六进制）
+ta11 :计科二班第一组
+ta21 :计科三班第一组
+
+tb01 软工一班第一组
+tb11 软工二班第一组
+
+请按此，不要占用别的组的表名字。
+
+
+ 
+ 

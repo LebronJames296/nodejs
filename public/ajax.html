@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script type="text/javascript" src="./js/xmlhttp.js">
+			
+		</script>
+		
+	</head>
+	<body>
+		<button type="button" id="test">test</button>
+		<div id ="result"></div>
+	</body>
+	<script type="text/javascript">
+		var tbtn = document.getElementById("test");
+		
+		console.log(tbtn);
+		tbtn.addEventListener("click",function(e){
+			urlCall('/checklogin',null,"GET",function(r){
+				
+				//alert(r);
+				var rr = JSON.parse(r);
+				// alert(rr);
+			 document.getElementById('result').innerHTML="CheckLogin:"+rr;
+			})
+		})
+		
+	</script>
+</html>
