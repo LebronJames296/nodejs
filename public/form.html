@@ -5,7 +5,8 @@
   <meta charset="utf-8">
   <title>登录 -MyBlog</title>
 	<link rel="stylesheet" href="js/bootstrap.min.css">
-	<script src="js/xmlhttp.js"  ></script>
+	<script src="js/xmlhttp.js"> </script>
+	<script src="js/email_rule.js"> </script>
 <style>
  
 	body{
@@ -16,22 +17,21 @@
 	
 	#content{
 		margin-top: 50px;
-		height:350px;
+		height:300px;
 		width: 400px;
 		border: #2B2B2B 1px solid;
 		background:#E8E8E8 ;
 		border-radius: 8%;
 	}
 	
-	#succ{
+	#succ,#error,#reset{
 		display: none;
 	}
-	
-	#error{
-		display: none;
-	}
-	#reset{
-		display: none;
+	 
+	#tip1,#tip0{
+	color: red;
+	padding-left: 5px;
+	margin-top: 10px;
 	}
  
 </style>
@@ -93,23 +93,23 @@
 			</div>
 			<!-- form -->
 					
-			<form action="/login" method="POST" class="form-horizontal  ">
+			<form action="/login" method="POST" class="form-horizontal " id="login">
 			 
 				
 				 <div class="form-group">
-					 <label class="col-md-3 control-label" id="username">Username</label>
+					 <label class="col-md-3 control-label" >Username</label>
 					 <div class="col-md-7">
-						 <input type="text" class="form-control" name="username" placeholder="username">
+						 <input type="text" class="form-control" name="username" placeholder="username" id="user">
+						  <span id ="tip0"></span>
 					 </div>
-				
-				 </div>
+				</div>
 			 
 			
 				<div class="form-group">
 					<label class="col-md-3 control-label">Password</label>
 					<div class="col-md-7">
-						<input type="password" class="form-control" name="password" placeholder="Password">
-								
+						<input type="password" class="form-control" name="password" placeholder="Password" id="password">
+						 <span id ="tip1"></span>
 					</div>
 				 </div>
 				 
@@ -117,7 +117,7 @@
 				 
 					 <div class="col-md-offset-5 ">
 					
-						 <button type="submit" class="btn btn-success" id="btn">登录</button><br>
+						 <button type="submit" class="btn btn-success" id="btn" style="margin-bottom:5px ;">登录</button><br>
 			 
 					 </div>
 						<div class="col-md-offset-1">
@@ -128,18 +128,12 @@
 			</form>
 		</div>	
 	 
-		
+	 
+	</body>	
 
-		
- 
-		
-	<script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
-	<script src="bootstrap.min.js"></script>
   <script >
   	window.onload =function(){
-		 function $(id){
-		 		return typeof id==="string"?document.getElementById(id):null;
-		 	}
+
 		function changed(str1,str2,str3){
 		 
 			$(str1).style.display="block";
@@ -147,6 +141,7 @@
 			$(str3).style.display="none" ;
 		 
 		}
+	 
 				
 			urlCall('/checkRegister',null,"GET",function(r){
 				
@@ -155,16 +150,16 @@
 				switch(rr){
 					case "error":{
 				 
-						changed('error');
+						changed('error','succ','reset');
 						break;
 					}
 					case "already":{
-						changed('succ');
+						changed('succ','error','reset');
 						break;
 					}
 					case "reset":{
 						 
-						changed('reset');
+						changed('reset','succ','error');
 						break;
 					}
 					default:{
@@ -175,13 +170,27 @@
 				}
  
 			})
-			
- 
+		/*表单验证*/	
+		$('user').onblur=function(){
+			checkNull('user','tip0','用户名');
+		}			
+	 
+		$('password').onblur=function(){
+			checkNull('password','tip1','密码');
+		}	
+				
+		$('login').onsubmit=function(){
+			if($('user').value=="")
+			{
+				return false;	
+			}else if($('password').value==""){
+				return false;
+			}else{
+				return true;
+			}
+		}
 		
-		
-	}
+}
   </script>
-	
-</body>
-
+ 
 </html>

@@ -5,7 +5,7 @@ var sessions ={};
 var registers={};
 var logining_user;
 var verify;
-var reqEmail;
+var reqEmail="zcvx@*/21.}[]m";
 var crypto = require('crypto');
 
 
@@ -17,8 +17,8 @@ async function register(req,res,next)
   var r  = await model.register(req.body);
   console.log('param-r:',r);
   //默认注册成功，进行伪登录,发送激活邮件
-  falseLogin(req.body.username,res);
-  RegisterSendMail(req.body.username);
+  // falseLogin(req.body.username,res);
+  // RegisterSendMail(req.body.username);
   var md5 = crypto.createHash('md5');
   //创建注册用户的cookie，用于判断是否注册成功
   	
@@ -35,13 +35,52 @@ async function register(req,res,next)
 	res.redirect('http://localhost:8333/form.html',next);
  
  }
+ 
+  /*
+ 伪登录
+ 当用户注册后马上为其添加user-cookie用于验证成功后的跳转*/
+ function falseLogin(reName,res){
+ 				//身份验证成功，可以写session了
+ 	var md5 = crypto.createHash('md5');
+ 	var result = md5.update('james'+Date.now()).digest('hex');
+ 			 console.log(result);
+ 			  //获取客户端传送的用户参数
+ 			 sessions[result] =reName;
+ 			//全局变量  当前登录用户  从登录成功获取 用于检测该用户是否已经邮箱验证成功
+ 			logining_user=reName;
+ 			 
+ 			 console.log('username=',reName);
+ 			
+ 			 res.header("Set-Cookie",`user=${result}; httponly`);
+ 	 
+ } 
+ 
+  /*邮件激活
+ 当用户注册时完成时调用一次且仅调用一次*/
+ async function RegisterSendMail(reName){
+ 	 console.log('reName',reName)
+ 	
+ 	 //执行发送邮件逻辑：生成一个12位数token令牌，存入数据库，并且作为参数加到邮件链接上
+ 	 var token =randomWord(false, 12)
+ 	  console.log('token',token)
+ 	 try{
+ 	  var r= await email.sendMail(reName,token);
+ 	  console.log('send-email-right',r);	
+ 	  
+ 	  }catch(e){
+ 	  console.log('send-email-error',r);	
+ 	  }
+ }
 
- /*找回密码*/
+ /*
+ 只支持已完成邮箱验证的用户
+ 找回密码*/
  async function getKey(req,res,next){
 	 //得到一个邮箱，生成令牌，再发送邮件
 	  console.log('req.email',req.params.email)
 	  //将申请的邮箱保存下来，作为之后的判断
 	  reqEmail=req.params.email;
+	  console.log('getkey-reqEmail'.reqMail)
 	  //生成一个register-cookie里面存放已发送的信息
 	 
 	  getKeySendMail(req.params.email);
@@ -62,9 +101,7 @@ function makeCookie(name,res){
 			 console.log(result);
 		//****键值  registers[result]
 			 registers[result] =name;
-			 //获取客户端传送的注册用户参数
- 
-			
+			 //获取客户端传送的注册用户参数 
 			 res.header("Set-Cookie",`register=${result}; httponly`);
 } 
  /*发送找回密码邮件
@@ -95,8 +132,7 @@ async function SetPass(req,res,next){
 	
 	try{
 		var r = await email.setPass(arr1[1],arr[1])
-		//验证成功，刷新认证
-		verify=1;
+
 		console.log('r=',r)
 		if(r=='1'){
 			//验证通过，跳转到重置密码页面
@@ -104,6 +140,7 @@ async function SetPass(req,res,next){
 		}
 		else{
 			//验证失败
+			res.send('链接已经失效');
 		}
 		
 	}catch(e){
@@ -119,29 +156,33 @@ async function SetPass(req,res,next){
 */
 async function reset(req,res,next){
 	
-	try{
+ 
 		console.log('req.email-reset:',req.params); 
+		//判断用户邮箱是否为发起邮箱
+		if(reqEmail!=req.params.email){
+			res.send('请输入自己的邮箱');
+			//考虑再加一条cookie
+		}else{
 		var r = await email.reset(req.params.email,req.params.password)
-		console.log('r',r);
+		console.log('get-it-r',r);
 	 //请求用户邮箱置零
-		console.log('reqMail')
+		console.log('reqMail',reqEmail)
 		reqEmail=0;
-	if(r=='ok'){
+		if(r=='ok'){
+			console.log('ok is ok')
 		//用户密码重置成功，先写一个重置成功的cookie再跳转
 		makeCookie('reset',res);
-	 res.redirect('http://localhost:8333/form.html',next);
-	}
-  
-	}catch(e){
-		res.send('not'); 
-	}
+		res.redirect('http://localhost:8333/form.html',next);
+		}			
+		}
+ 
 	
 }
 
 /*监控密码重置页面的邮箱是否等于发起请求的邮箱*/
 function checkEmail(req,res,next){
 	console.log('email-checkEmail',req.body)
-	// console.log('checkE-reqEmail',reqEmail)
+	console.log('checkE-reqEmail',reqEmail)
 	if(req.body==reqEmail){
  
 		res.send('ok');
@@ -407,14 +448,14 @@ function logout(req,res,next){
 	console.log('loging-user',logining_user);
 	if(logining_user==undefined||logining_user=='null')
 	{
-		console.log("no")
+		console.log("当前无登录用户-sendMail")
 	}
 	//
 	else{
-		console.log('yes');
+		console.log('有来自登录用户的发邮件请求-sendMail');
 		//执行发送邮件逻辑：生成一个12位数token令牌，存入数据库，并且作为参数加到邮件链接上
 		var token =randomWord(false, 12)
-		console.log('token',token)
+		// console.log('token',token)
 		try{
 		var r= await email.sendMail(logining_user,token);
 		console.log('send-email-right',r);	
@@ -423,48 +464,15 @@ function logout(req,res,next){
 		console.log('send-email-error',r);	
 		}
 	}
-	
-	
+
 	//返回客户端，
 	res.send(logining_user);
  }
  
- /*邮件激活
- 当用户注册时完成时调用一次且仅调用一次*/
- async function RegisterSendMail(reName){
-	 console.log('reName',reName)
-	
-	 //执行发送邮件逻辑：生成一个12位数token令牌，存入数据库，并且作为参数加到邮件链接上
-	 var token =randomWord(false, 12)
-	  console.log('token',token)
-	 try{
-	  var r= await email.sendMail(reName,token);
-	  console.log('send-email-right',r);	
-	  
-	  }catch(e){
-	  console.log('send-email-error',r);	
-	  }
- }
+
  
  
- /*
- 伪登录
- 当用户注册后马上为其添加user-cookie用于验证成功后的跳转*/
- function falseLogin(reName,res){
-				//身份验证成功，可以写session了
-	var md5 = crypto.createHash('md5');
-	var result = md5.update('james'+Date.now()).digest('hex');
-			 console.log(result);
-			  //获取客户端传送的用户参数
-			 sessions[result] =reName;
-			//全局变量  当前登录用户  从登录成功获取 用于检测该用户是否已经邮箱验证成功
-			logining_user=reName;
-			 
-			 console.log('username=',reName);
-			
-			 res.header("Set-Cookie",`user=${result}; httponly`);
-	 
- } 
+
  /*发送邮件后，跳转的路由
  用于完成邮箱的验证，并且清空token
  最后跳转到主页*/

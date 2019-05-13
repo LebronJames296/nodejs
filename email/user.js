@@ -2,10 +2,14 @@ var transporter = require('../email');
  var db = require('../db');
  var crypto = require('crypto');
  var md5 = crypto.createHash('md5');
+
+/*在用户尚未完成邮箱验证的情况下，用户登录主页
+发起的邮箱验证操作
+*/
 function sendMail(u,token)
 {	
-	console.log('email.u:',u);
-	console.log('email.token:',token);
+	console.log('email.u-sendMail:',u);
+	console.log('email.token-sendMail:',token);
 	return new Promise(function(succ,fail){
 		try{
 			 /*
@@ -17,10 +21,9 @@ function sendMail(u,token)
 				
 				  if (error) throw error;
 				  if(results[0].email_verify==1)
-				  {
+				  { //已激活,无需操作
 					  succ('ok');
-					  //已激活,无需操作
-				  }else{
+			  	  }else{
 					  //未激活,先把令牌存入数据库，然后再发送邮件链接
 					  db.query("update ta01 set email_token =? where username =? ",[token,u],
 					  function(error,results,fields){
@@ -33,29 +36,27 @@ function sendMail(u,token)
 						  if (error) throw error;	
 						  // console.log('email:',results[0].email);
 						  if(results[0].email!=undefined){
-						  	console.log(results[0].email)
+						  	console.log('未验证邮箱的用户的邮箱',results[0].email)
 							//获取邮箱成功 开始发邮件
 							send(results[0].email,token,"注册",'aliveMail');
-						   succ('1');
+						   succ('yes1');
 						  }
 						  else{
 							  //没有获取到邮箱
-						  succ('2');
+						  succ('no1');
 						  }
 						  	
 						  });
-								 
-								 
-						 
+ 
 						  }else{
-							  succ('no1');
+							  //令牌插入邮箱失败
+							  succ('no2');
 						  }
 					  
 					  });
 					 
 				  }
- 
-				 
+  
 				});
 			
 			
@@ -70,7 +71,9 @@ function sendMail(u,token)
 }
 
 
-
+/*
+ 尚未完成激活的用户点击链接后，服务端调用该方法
+*/
 function  aliveMail(u,token){
 	return new Promise(function(succ,fail){
 		//token 验证token后 把token清空并且激活邮件权限
@@ -107,52 +110,8 @@ function  aliveMail(u,token){
 	});
 }
 
-/*
-密码重置
-更新数据库密码
-*/
-function reset(Email,password){
-	return new Promise(function(succ,fail){
-		try{
-				 db.query("update ta01 set passwd =md5(?) where email =? ",[password,Email],
-				  function(error,results,fields){
-				  if (error) throw error;
-					if(results.affectedRows>0){
-						console.log('ret-result',results.affectedRows)
-							console.log('更新成功')
-							succ('ok');
-					}else{
-							console.log('更新失败')
-							succ('no1');
-					}
-				
-				})		
-		}catch(e){
-			succ('no2')
-		}
-	});
-}
- 
- /*存入令牌*/
- function insertToken(way,value,token){
- 	return new Promise(function(succ,fail){
-		try{
-			 db.query("update ta01 set email_token =? where "+way+" =? ",[token,value],
-			  function(error,results,fields){
-			  if (error) throw error;
-				if(results.affectedRows>0){
-						succ('ok');
-				}else{
-						succ('no');
-				}
-			
-			})
-		}catch(e){
-			  succ('error');
-		}
-	})
- }
- 
+
+
  /*发送重置密码邮件
  先存令牌再发邮件
  */
@@ -175,6 +134,28 @@ function reset(Email,password){
 		}
 	});
 }
+
+ 
+ /*存入令牌*/
+ function insertToken(way,value,token){
+ 	return new Promise(function(succ,fail){
+		try{
+			 db.query("update ta01 set email_token =? where "+way+" =? ",[token,value],
+			  function(error,results,fields){
+			  if (error) throw error;
+				if(results.affectedRows>0){
+						succ('ok');
+				}else{
+						succ('no');
+				}
+			
+			})
+		}catch(e){
+			  succ('error');
+		}
+	})
+ }
+ 
  
  /*执行参数对比操作：
  1.验证令牌正确性
@@ -199,6 +180,32 @@ function reset(Email,password){
 			succ('3');
 		}
 	})
+ }
+ 
+ /*
+ 密码重置
+ 更新数据库密码
+ */
+ function reset(Email,password){
+ 	return new Promise(function(succ,fail){
+ 		try{
+ 				 db.query("update ta01 set passwd =md5(?) where email =? ",[password,Email],
+ 				  function(error,results,fields){
+ 				  if (error) throw error;
+ 					if(results.affectedRows>0){
+ 						console.log('ret-result',results.affectedRows)
+ 							console.log('更新成功')
+ 							succ('ok');
+ 					}else{
+ 							console.log('更新失败')
+ 							succ('no1');
+ 					}
+ 				
+ 				})		
+ 		}catch(e){
+ 			succ('no2')
+ 		}
+ 	});
  }
  
  /*验证令牌正确性*/

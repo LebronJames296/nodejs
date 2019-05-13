@@ -6,6 +6,7 @@
   <title>注册 -MyBlog</title>
 	<link rel="stylesheet" href="js/bootstrap.min.css">
 	<script src="js/xmlhttp.js"> </script>
+	<script src="js/email_rule.js"> </script>
 <style>
  
  body{
@@ -22,20 +23,12 @@
 		background:#FFFFFF ;
 		border-radius: 8%;
 	}
-	#tip1{
-		color: red;
-		padding-left: 5px;
- 
- 
-		margin-top: 10px;
+	#tip1,#tip0,#tip2,#tip3{
+	color: red;
+	padding-left: 5px;
+	margin-top: 10px;
 	}
-	#tip0{
-		color: red;
-		padding-left: 5px;
-	 
-	 
-		margin-top: 10px;
-	}
+ 
  
 </style>
 </head>
@@ -65,7 +58,7 @@
 			<h2 style="text-align: center;">注册</h2>
 		</div>
 		<!-- form -->
-		<form action="/register" method="POST" class="form-horizontal  ">
+		<form action="/register" method="POST" class="form-horizontal " id="register">
 			
 			 <div class="form-group">
 				 <label class="col-md-3 control-label" style="text-align: center;">Email</label>
@@ -87,6 +80,7 @@
 			 				 <label class="col-md-3 control-label">Nickname</label>
 			 				 <div class="col-md-7">
 			 					 <input type="text" class="form-control" id="name" placeholder="nickname" name="name">
+								  <span id ="tip2"></span>
 			 				 </div>
 			 </div>
 		
@@ -94,6 +88,7 @@
 				<label class="col-md-3 control-label">Password</label>
 				<div class="col-md-7">
 					<input type="password" class="form-control "  id ="password"name="password" placeholder="Password">
+					 <span id ="tip3"></span>
 				</div>
 			 </div>
 			 
@@ -111,50 +106,64 @@
 </body>
 <script>
 	window.onload =function(){
-		function $(id){
-			return typeof id==='string'?document.getElementById(id):null;
-		}
-	 
  
 		$('username').onblur =function(){
 			
 			urlCall('/compareRegister',`${$('username').value}`,"POST",function(r){
-			
+			var zz=checkNull('username','tip1','用户名');
 			var rr = JSON.parse(r);
-		
-			if(rr=='not')
-			{
-				$('tip1').innerText="";
-				 
-			}else{
-				$('tip1').innerText='用户名已经存在';
-				
+			if(zz){
+				if(rr=='not')
+				{
+					$('tip1').innerText="";
+					 
+				}else{
+					$('tip1').innerText='用户名已经存在';
+				}
 			}
-			
           })
 		}
 		
-		$('email').onblur =function(){
-			
+	$('email').onblur =function(){ 	
 		/*邮箱查重*/
+		var zz=EmailRight('email','tip0');
 		urlCall('/compareEmail',`${$('email').value}`,"POST",function(r){
 		
 		var rr = JSON.parse(r);
-		if(rr=='not')
-		{
-			$('tip0').innerText="";
-			 
-		}else{
-			$('tip0').innerText='邮箱已经存在';
 			
-		}
-		
-		
+		if(zz){
+				if(rr=='not')
+			{
+				$('tip0').innerText="";
+				 
+			}else{
+				$('tip0').innerText='邮箱已经存在';
+			}
+		} 
+ 
 		})
-		}		
-		
+	}	
+		$('name').onblur=function(){
+			checkNull('name','tip2','昵称');
+		}
+		$('password').onblur=function(){
+			checkNull('password','tip3','密码');
+		}
+	
+ 
+		/*表单验证*/
+		$('register').onsubmit=function(){
+			if($('email').value==""||$('username').value==""||$('name').value==""||$('password').value==""){
+				return false;
+			}
+			else if($('tip0').innerHTML!=''||$('tip1').innerHTML!=''||$('tip2').innerHTML!=''||$('tip3').innerHTML!=''){
 				
-		
+				return false
+			}
+			else return true
+			 
+		}
+ 
 	}
 </script>
 </html>
